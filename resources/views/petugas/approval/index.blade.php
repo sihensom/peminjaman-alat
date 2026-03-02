@@ -159,7 +159,7 @@
                                             <i class="bi bi-cash-coin me-1 text-warning"></i>
                                             Denda <span class="text-secondary">(Rupiah)</span>
                                             @if($p->tanggal_kembali_rencana->isPast())
-                                            <span class="badge bg-danger ms-1">Terlambat {{ $p->tanggal_kembali_rencana->diffInDays(now()) }} hari</span>
+                                            <span class="badge bg-danger ms-1">Terlambat {{ ceil($p->tanggal_kembali_rencana->diffInDays(now())) }} hari</span>
                                             @endif
                                         </label>
                                         <div class="denda-templates d-flex flex-wrap gap-2 mb-2">
