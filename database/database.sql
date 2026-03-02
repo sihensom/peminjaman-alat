@@ -362,9 +362,11 @@ DELIMITER //
 CREATE PROCEDURE sp_create_pengembalian(
     IN p_peminjaman_id INT,
     IN p_tanggal_kembali_aktual DATE,
-    IN p_kondisi_alat ENUM('baik', 'rusak'),
+    IN p_kondisi_alat ENUM('baik', 'rusak', 'hilang'),
+    IN p_solusi VARCHAR(100),
     IN p_keterangan TEXT,
-    IN p_received_by INT
+    IN p_received_by INT,
+    IN p_denda BIGINT UNSIGNED
 )
 BEGIN
     DECLARE v_jumlah INT DEFAULT 0;
@@ -379,15 +381,15 @@ BEGIN
     START TRANSACTION;
         -- Ambil data peminjaman
         SELECT jumlah_pinjam, alat_id INTO v_jumlah, v_alat_id
-        FROM peminjaman WHERE id = p_peminjaman_id AND status IN ('disetujui', 'dipinjam') FOR UPDATE;
+        FROM peminjaman WHERE id = p_peminjaman_id AND status IN ('disetujui', 'dipinjam', 'diajukan_kembali') FOR UPDATE;
         
         IF v_alat_id IS NULL THEN
             SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'Peminjaman tidak ditemukan atau sudah dikembalikan';
         END IF;
         
         -- Tambah record pengembalian
-        INSERT INTO pengembalian (peminjaman_id, tanggal_kembali_aktual, kondisi_alat, keterangan, received_by)
-        VALUES (p_peminjaman_id, p_tanggal_kembali_aktual, p_kondisi_alat, p_keterangan, p_received_by);
+        INSERT INTO pengembalian (peminjaman_id, tanggal_kembali_aktual, kondisi_alat, solusi, keterangan, received_by, denda)
+        VALUES (p_peminjaman_id, p_tanggal_kembali_aktual, p_kondisi_alat, p_solusi, p_keterangan, p_received_by, p_denda);
         
         -- Update status peminjaman
         UPDATE peminjaman SET status = 'dikembalikan' WHERE id = p_peminjaman_id;
@@ -395,9 +397,9 @@ BEGIN
         -- Kembalikan stok alat
         UPDATE alat SET jumlah_tersedia = jumlah_tersedia + v_jumlah WHERE id = v_alat_id;
         
-        -- Jika kondisi rusak, update kondisi alat
-        IF p_kondisi_alat = 'rusak' THEN
-            UPDATE alat SET kondisi = 'rusak' WHERE id = v_alat_id;
+        -- Jika kondisi rusak atau hilang, update kondisi alat
+        IF p_kondisi_alat != 'baik' THEN
+            UPDATE alat SET kondisi = p_kondisi_alat WHERE id = v_alat_id;
         END IF;
     COMMIT;
 END //
