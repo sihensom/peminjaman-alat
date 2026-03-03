@@ -1074,6 +1074,9 @@
                     <a href="{{ route('peminjam.pengembalian.index') }}" class="nav-item {{ request()->routeIs('peminjam.pengembalian.*') ? 'active' : '' }}">
                         <i class="bi bi-arrow-return-left"></i> Riwayat Pengembalian
                     </a>
+                    <a href="{{ route('peminjam.denda.index') }}" class="nav-item {{ request()->routeIs('peminjam.denda.*') ? 'active' : '' }}">
+                        <i class="bi bi-cash-coin"></i> Denda Saya
+                    </a>
                 @endif
             @endauth
         </nav>

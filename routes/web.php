@@ -108,4 +108,9 @@ Route::prefix('peminjam')->name('peminjam.')->middleware(['auth', 'role:peminjam
 
     // Riwayat Pengembalian
     Route::get('/pengembalian', [PeminjamPengembalianController::class, 'index'])->name('pengembalian.index');
+
+    // Denda / Pembayaran
+    Route::get('/denda', [\App\Http\Controllers\Peminjam\DendaController::class, 'index'])->name('denda.index');
+    Route::get('/denda/{pengembalian}/bayar', [\App\Http\Controllers\Peminjam\DendaController::class, 'pay'])->name('denda.pay');
+    Route::post('/denda/{pengembalian}/bayar', [\App\Http\Controllers\Peminjam\DendaController::class, 'processPayment'])->name('denda.process');
 });

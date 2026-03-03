@@ -19,12 +19,16 @@ class Pengembalian extends Model
         'received_by',
         'denda',
         'solusi',
+        'denda_status',
+        'metode_bayar',
+        'tanggal_bayar',
     ];
 
     protected function casts(): array
     {
         return [
             'tanggal_kembali_aktual' => 'date',
+            'tanggal_bayar' => 'datetime',
         ];
     }
 
