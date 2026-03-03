@@ -6,8 +6,8 @@
     <div><label class="form-label">Dari</label><input type="date" name="dari" class="form-control" value="{{ request('dari', now()->startOfMonth()->format('Y-m-d')) }}"></div>
     <div><label class="form-label">Sampai</label><input type="date" name="sampai" class="form-control" value="{{ request('sampai', now()->format('Y-m-d')) }}"></div>
     <button class="btn btn-primary"><i class="bi bi-filter me-1"></i>Filter</button>
-    <a href="{{ route('petugas.laporan.print', array_merge(request()->query(), ['mode' => 'print'])) }}" class="btn btn-outline-secondary" target="_blank"><i class="bi bi-printer me-1"></i>Cetak Langsung</a>
-    <a href="{{ route('petugas.laporan.print', array_merge(request()->query(), ['mode' => 'pdf'])) }}" class="btn btn-outline-danger" target="_blank"><i class="bi bi-file-earmark-pdf me-1"></i>Unduh PDF</a>
+    <a href="{{ route('petugas.laporan.print', request()->query()) }}" class="btn btn-outline-secondary" target="_blank"><i class="bi bi-printer me-1"></i>Cetak Langsung</a>
+    <a href="{{ route('petugas.laporan.pdf', request()->query()) }}" class="btn btn-outline-danger"><i class="bi bi-file-earmark-pdf me-1"></i>Unduh PDF</a>
 </form>
 
 <div class="row g-3 mb-4">

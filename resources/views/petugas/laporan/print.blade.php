@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>{{ request('mode') == 'pdf' ? 'Simpan PDF' : 'Cetak' }} - Laporan Peminjaman</title>
+    <title>Cetak Laporan Peminjaman</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Arial, sans-serif; font-size: 12px; margin: 20px; color: #222; }
@@ -32,23 +32,11 @@
         .badge-ditolak { background: #f8d7da; color: #721c24; }
         .badge-dipinjam { background: #cce5ff; color: #004085; }
         .badge-dikembalikan { background: #d1e7dd; color: #0a3622; }
-
-        /* PDF alert banner */
-        .pdf-alert {
-            background: linear-gradient(135deg, #dc3545, #c82333);
-            color: white;
-            padding: 14px 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            text-align: center;
-            font-size: 13px;
-        }
-        .pdf-alert b { font-size: 14px; }
-        .pdf-alert small { display: block; margin-top: 4px; opacity: 0.9; }
+        .badge-diajukan_kembali { background: #fff3cd; color: #856404; }
+        .badge-dibatalkan { background: #e2e3e5; color: #495057; }
 
         @media print {
             .no-print { display: none !important; }
-            .pdf-alert { display: none !important; }
             body { margin: 10px; }
         }
 
@@ -71,8 +59,6 @@
         }
         .btn-print { background: #343a40; color: white; }
         .btn-print:hover { background: #23272b; }
-        .btn-pdf { background: #dc3545; color: white; }
-        .btn-pdf:hover { background: #c82333; }
         .btn-back { background: #6c757d; color: white; }
         .btn-back:hover { background: #5a6268; }
     </style>
@@ -82,16 +68,8 @@
     {{-- Action Bar (hidden when printing) --}}
     <div class="action-bar no-print">
         <button class="btn btn-print" onclick="window.print()">🖨️ Cetak Langsung</button>
-        <button class="btn btn-pdf" onclick="savePdf()">📄 Simpan sebagai PDF</button>
         <button class="btn btn-back" onclick="window.close()">✖ Tutup</button>
     </div>
-
-    @if(request('mode') == 'pdf')
-    <div class="pdf-alert no-print">
-        <b>💡 Cara Simpan sebagai PDF:</b>
-        <small>Saat dialog cetak muncul → Pilih <b>"Microsoft Print to PDF"</b> atau <b>"Save as PDF"</b> di bagian Printer → Klik <b>Simpan</b></small>
-    </div>
-    @endif
 
     {{-- Header --}}
     <div class="header">
@@ -152,20 +130,10 @@
     </div>
 
     <script>
-        function savePdf() {
-            window.print();
-        }
-
-        // Auto-trigger based on mode
-        @if(request('mode') == 'print')
-            window.onload = function() {
-                setTimeout(function() { window.print(); }, 500);
-            };
-        @elseif(request('mode') == 'pdf')
-            window.onload = function() {
-                setTimeout(function() { window.print(); }, 800);
-            };
-        @endif
+        // Auto-trigger print
+        window.onload = function() {
+            setTimeout(function() { window.print(); }, 500);
+        };
     </script>
 </body>
 </html>

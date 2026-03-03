@@ -80,6 +80,7 @@ Route::prefix('petugas')->name('petugas.')->middleware(['auth', 'role:petugas'])
     // Laporan
     Route::get('/laporan', [LaporanController::class, 'index'])->name('laporan.index');
     Route::get('/laporan/print', [LaporanController::class, 'print'])->name('laporan.print');
+    Route::get('/laporan/pdf', [LaporanController::class, 'downloadPdf'])->name('laporan.pdf');
 });
 
 /*
