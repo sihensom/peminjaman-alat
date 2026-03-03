@@ -70,6 +70,7 @@ Route::prefix('petugas')->name('petugas.')->middleware(['auth', 'role:petugas'])
     Route::post('/approval/{peminjaman}/approve', [ApprovalController::class, 'approve'])->name('approval.approve');
     Route::post('/approval/{peminjaman}/reject', [ApprovalController::class, 'reject'])->name('approval.reject');
     Route::post('/approval/{peminjaman}/accept-return', [ApprovalController::class, 'acceptReturn'])->name('approval.acceptReturn');
+    Route::post('/approval/{peminjaman}/reject-return', [ApprovalController::class, 'rejectReturn'])->name('approval.rejectReturn');
 
     // Monitor Pengembalian
     Route::get('/monitor', [MonitorController::class, 'index'])->name('monitor.index');

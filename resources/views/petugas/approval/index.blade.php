@@ -42,6 +42,11 @@
     border: 1px solid rgba(245,158,11,0.3) !important;
     color: #fcd34d !important;
 }
+.modal .alert-danger {
+    background: rgba(239,68,68,0.15) !important;
+    border: 1px solid rgba(239,68,68,0.3) !important;
+    color: #fca5a5 !important;
+}
 .denda-templates button {
     background: rgba(255,255,255,0.08);
     border: 1px solid rgba(255,255,255,0.15);
@@ -88,15 +93,28 @@
                     @if($p->status === 'pending')
                     <a href="{{ route('petugas.approval.show', $p) }}" class="btn btn-sm btn-primary"><i class="bi bi-eye me-1"></i>Review</a>
                     @elseif($p->status === 'diajukan_kembali')
-                    <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#modalTerima{{ $p->id }}">
-                        <i class="bi bi-check-circle me-1"></i>Terima Pengembalian
-                    </button>
+                    <div class="d-flex gap-1">
+                        <button type="button" class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#modalTerima{{ $p->id }}">
+                            <i class="bi bi-check-circle me-1"></i>Terima
+                        </button>
+                        <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#modalTolak{{ $p->id }}">
+                            <i class="bi bi-x-circle me-1"></i>Tolak
+                        </button>
+                    </div>
                     @endif
                 </td>
             </tr>
 
             {{-- Modal Terima Pengembalian --}}
             @if($p->status === 'diajukan_kembali')
+            @php
+                // Hitung keterlambatan: terlambat hanya jika HARI INI > tanggal batas kembali
+                // Jika batas kembali = hari ini, maka BELUM terlambat
+                $hariIni = \Carbon\Carbon::today();
+                $batasKembali = $p->tanggal_kembali_rencana->startOfDay();
+                $terlambat = $hariIni->greaterThan($batasKembali);
+                $hariTerlambat = $terlambat ? $batasKembali->diffInDays($hariIni) : 0;
+            @endphp
             <div class="modal fade" id="modalTerima{{ $p->id }}" tabindex="-1">
                 <div class="modal-dialog modal-lg">
                     <div class="modal-content">
@@ -154,12 +172,12 @@
 
                                     {{-- Denda (muncul jika terlambat ATAU kondisi tidak baik) --}}
                                     <div class="col-12" id="dendaWrap{{ $p->id }}"
-                                        @if(!$p->tanggal_kembali_rencana->isPast()) style="display:none;" @endif>
+                                        @if(!$terlambat) style="display:none;" @endif>
                                         <label class="form-label">
                                             <i class="bi bi-cash-coin me-1 text-warning"></i>
                                             Denda <span class="text-secondary">(Rupiah)</span>
-                                            @if($p->tanggal_kembali_rencana->isPast())
-                                            <span class="badge bg-danger ms-1">Terlambat {{ ceil($p->tanggal_kembali_rencana->diffInDays(now())) }} hari</span>
+                                            @if($terlambat)
+                                            <span class="badge bg-danger ms-1">Terlambat {{ $hariTerlambat }} hari</span>
                                             @endif
                                         </label>
                                         <div class="denda-templates d-flex flex-wrap gap-2 mb-2">
@@ -178,6 +196,44 @@
                             <div class="modal-footer">
                                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                                 <button type="submit" class="btn btn-success"><i class="bi bi-check-lg me-1"></i>Konfirmasi Terima</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Modal Tolak Pengembalian --}}
+            <div class="modal fade" id="modalTolak{{ $p->id }}" tabindex="-1">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <form method="POST" action="{{ route('petugas.approval.rejectReturn', $p) }}">
+                            @csrf
+                            <div class="modal-header">
+                                <h5 class="modal-title"><i class="bi bi-x-circle me-2 text-danger"></i>Tolak Pengembalian</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="alert alert-warning mb-3">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                    Pengembalian akan <strong>ditolak</strong> dan status peminjaman kembali ke <strong>Disetujui</strong>. Peminjam dapat mengajukan pengembalian ulang.
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label">Alasan Penolakan <span class="text-danger">*</span></label>
+                                    <select class="form-select mb-2" onchange="setAlasanTolak(this, {{ $p->id }})">
+                                        <option value="">-- Pilih Alasan atau Ketik Manual --</option>
+                                        <option value="Barang tidak sesuai">Barang tidak sesuai</option>
+                                        <option value="Barang rusak (tidak di ganti)">Barang rusak (tidak di ganti)</option>
+                                        <option value="Barang hilang (tidak di ganti)">Barang hilang (tidak di ganti)</option>
+                                        <option value="custom">Ketik alasan lainnya...</option>
+                                    </select>
+                                    <textarea name="alasan_tolak" id="alasanTolak{{ $p->id }}" class="form-control" rows="2"
+                                        placeholder="Jelaskan alasan penolakan pengembalian..." required></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-danger"><i class="bi bi-x-lg me-1"></i>Konfirmasi Tolak</button>
                             </div>
                         </form>
                     </div>
@@ -225,8 +281,6 @@ function handlePetugasKondisi(sel, id) {
         solusiSel.required = false;
         keteranganWrap.style.display = 'none';
         // Hide denda only if not late
-        // Check if already shown due to lateness - keep shown if late
-        // We use data attribute
         const dendaLate = dendaWrap.dataset.late === '1';
         if (!dendaLate) dendaWrap.style.display = 'none';
     }
@@ -252,7 +306,17 @@ function formatRupiah(input, id) {
     input.value = 'Rp ' + num.toLocaleString('id-ID');
 }
 
-// Mark late banners
+function setAlasanTolak(sel, id) {
+    const textarea = document.getElementById('alasanTolak' + id);
+    if (sel.value === 'custom') {
+        textarea.value = '';
+        textarea.focus();
+    } else if (sel.value !== '') {
+        textarea.value = sel.value;
+    }
+}
+
+// Mark late denda wraps
 document.querySelectorAll('[id^="dendaWrap"]').forEach(el => {
     if (el.style.display !== 'none') el.dataset.late = '1';
 });

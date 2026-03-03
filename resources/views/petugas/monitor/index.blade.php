@@ -18,7 +18,7 @@
                 <td>{{ $p->tanggal_pinjam->format('d/m/Y') }}</td>
                 <td>
                     {{ $p->tanggal_kembali_rencana->format('d/m/Y') }}
-                    @if($p->tanggal_kembali_rencana->isPast() && !in_array($p->status, ['dikembalikan', 'ditolak']))
+                    @if(\Carbon\Carbon::today()->greaterThan($p->tanggal_kembali_rencana->startOfDay()) && !in_array($p->status, ['dikembalikan', 'ditolak']))
                     <span class="badge bg-danger ms-1">Terlambat</span>
                     @endif
                 </td>

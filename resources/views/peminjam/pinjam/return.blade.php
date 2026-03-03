@@ -11,7 +11,7 @@
             <tr><td class="text-secondary">Tgl Pinjam</td><td>{{ $peminjaman->tanggal_pinjam->format('d F Y') }}</td></tr>
             <tr><td class="text-secondary">Batas Kembali</td><td>
                 {{ $peminjaman->tanggal_kembali_rencana->format('d F Y') }}
-                @if($peminjaman->tanggal_kembali_rencana->isPast())
+                @if(\Carbon\Carbon::today()->greaterThan($peminjaman->tanggal_kembali_rencana->startOfDay()))
                 <span class="badge bg-danger ms-1">Terlambat</span>
                 @endif
             </td></tr>

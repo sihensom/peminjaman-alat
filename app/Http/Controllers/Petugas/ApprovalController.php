@@ -114,4 +114,27 @@ class ApprovalController extends Controller
         return redirect()->route('petugas.approval.index')
             ->with('success', 'Pengembalian alat berhasil diterima.');
     }
+
+    /**
+     * Tolak pengembalian alat dari peminjam (status: diajukan_kembali → kembali ke disetujui)
+     */
+    public function rejectReturn(Request $request, Peminjaman $peminjaman)
+    {
+        if ($peminjaman->status !== 'diajukan_kembali') {
+            return back()->with('error', 'Peminjaman ini tidak sedang mengajukan pengembalian.');
+        }
+
+        $request->validate([
+            'alasan_tolak' => 'required|string|max:255',
+        ]);
+
+        // Kembalikan status ke disetujui agar peminjam bisa mengajukan ulang
+        $peminjaman->update([
+            'status' => 'disetujui',
+            'keterangan' => 'Pengembalian ditolak: ' . $request->alasan_tolak,
+        ]);
+
+        return redirect()->route('petugas.approval.index')
+            ->with('success', 'Pengembalian berhasil ditolak. Peminjam akan diberitahu alasannya.');
+    }
 }
